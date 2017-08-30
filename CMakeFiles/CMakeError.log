@@ -1,0 +1,120 @@
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdC/CMakeCCompilerId.c 
+Build flags: 
+Id flags:  
+
+The output was:
+%1 не является приложением Win32
+
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdC/CMakeCCompilerId.c 
+Build flags: 
+Id flags: -c 
+
+The output was:
+%1 не является приложением Win32
+
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdC/CMakeCCompilerId.c 
+Build flags: 
+Id flags: -Aa 
+
+The output was:
+%1 не является приложением Win32
+
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdC/CMakeCCompilerId.c 
+Build flags: 
+Id flags: -D__CLASSIC_C__ 
+
+The output was:
+%1 не является приложением Win32
+
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdC/CMakeCCompilerId.c 
+Build flags: 
+Id flags:  
+
+The output was:
+%1 не является приложением Win32
+
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdC/CMakeCCompilerId.c 
+Build flags: 
+Id flags: -c 
+
+The output was:
+%1 не является приложением Win32
+
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdC/CMakeCCompilerId.c 
+Build flags: 
+Id flags: -Aa 
+
+The output was:
+%1 не является приложением Win32
+
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdC/CMakeCCompilerId.c 
+Build flags: 
+Id flags: -D__CLASSIC_C__ 
+
+The output was:
+%1 не является приложением Win32
+
+
+Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
+Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdCXX/CMakeCXXCompilerId.cpp 
+Build flags: 
+Id flags:  
+
+The output was:
+%1 не является приложением Win32
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdCXX/CMakeCXXCompilerId.cpp 
+Build flags: 
+Id flags: -c 
+
+The output was:
+%1 не является приложением Win32
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdCXX/CMakeCXXCompilerId.cpp 
+Build flags: 
+Id flags:  
+
+The output was:
+%1 не является приложением Win32
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: C:/Users/aalbutov/IdeaProjects/fann/CMakeFiles/3.9.1/CompilerIdCXX/CMakeCXXCompilerId.cpp 
+Build flags: 
+Id flags: -c 
+
+The output was:
+%1 не является приложением Win32
+
+
+Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+Determining if the C compiler works failed with the following output:
+Change Dir: C:/Users/aalbutov/IdeaProjects/FannEx/CMakeFiles/CMakeTmp
+
+Run Build Command:"nmake" "/NOLOGO" "cmTC_ae579\fast"
+
+Generator: execution of make failed. Make command was: "nmake" "/NOLOGO" "cmTC_ae579\fast"
+
+
