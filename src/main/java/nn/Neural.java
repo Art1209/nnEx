@@ -1,125 +1,42 @@
 package nn;
 
-
 import java.util.*;
+import static nn.MathTools.normalizeDiff;
 
 public class Neural {
-    public static Random rand = new Random();
     private static int counter;
     private int id;
+
+    private NN net;
+    private Type type;
+    private List<Synapse> synapses = new ArrayList<Synapse>(); //Исходящие синапсы
 
     private double output;
     private double input;
     private double lastInput;
     private double currentDelta;
 
-    private NN net;
-    private NNLayer layer;
-
-    public Map<Neural, double[]> getSynapses() {
-        return synapses;
+    public static NeuronBuilder getBuilder(int amount){
+        return new NeuronBuilder(amount);
     }
 
-    private Map<Neural,double[]> synapses = new HashMap<Neural, double[]>(); //Исходящие синапсы, в double[] хранятся пары вес, предыдущее изменение веса
+    Neural() {
+        counter++;
+        this.id = counter;
+    }
+
 
     public void addInput(double partialIn){
         input+=partialIn;
     }
 
-    public void doWork(){
-        output = normalize(input);
-        for (Neural neural:synapses.keySet()){
-            neural.addInput(output*synapses.get(neural)[0]);
-        }
-//        System.out.println(input+" --> "+ output);
-        lastInput=input;
-        this.input = 0;
+    public void doWork() {
+        getType().work(this);
     }
-    public void doFirstWork(int[] args){
-        output = normalize(args[id]);
-        for (Neural neural:synapses.keySet()){
-            neural.addInput(output*synapses.get(neural)[0]);
-        }
-//        System.out.println(args[id]+" --> "+ output);
-        lastInput=args[id];
-        input = 0;
-    }
-    public double doLastWork(){
-        System.out.println("input: "+input);
-        output = normalize(input);
-        lastInput=input;
-//        System.out.println(input+" --> "+ output);
-        input = 0;
-        return output;
-    }
-    public double normalize(double x){
-        return  sigmoid(x);
-    }
-    public double normalizeDiff(double input){
-        return  sigmoidDiff(input);
-    }
-    public void updateDelta(){
-        double tempSum=0;
-        if (this.layer.isOutNeural()){
-            tempSum =  (net.getOutIdeal() - output);
-            System.out.println("delta="+"(ideal="+net.getOutIdeal()+") - (output="+output+") *(normdiiff(output = "+output+")="+normalizeDiff(output)+") ="+tempSum*normalizeDiff(output));
-        } else {
-            for (Neural neural: synapses.keySet()){
-                tempSum+=(synapses.get(neural)[0]*neural.getCurrentDelta());
-            }
-        }
-        currentDelta = tempSum*normalizeDiff(output);
-    }
-    public void updateCurrentWeights(){
-        for (Neural neural:synapses.keySet()){
-
-            double tempLastWeight = synapses.get(neural)[0];
-            double tempLastWeightDiff = synapses.get(neural)[1];
-
-            double tempCurrentWeightDiff = (net.getSpeed()*neural.getCurrentDelta()*output)+(net.getMoment()*tempLastWeightDiff);
-            double tempCurrentWeight = tempLastWeight+tempCurrentWeightDiff;
-
-            synapses.get(neural)[0] = tempCurrentWeight;
-            synapses.get(neural)[1] = tempCurrentWeightDiff;
-        }
-    }
-    private double sigmoid(double d){
-        return (1/(1+Math.pow(Math.E, -d)));
-    }
-    private double sigmoidDiff(double out){
-        return ((1-out)*out);
+    public void updateDelta() {
+        getType().updateDelta(this);
     }
 
-    public double getLastInput() {
-        return lastInput;
-    }
-
-    public double getCurrentDelta() {
-        return currentDelta;
-    }
-
-    public Neural setNet(NN net) {
-        this.net = net;
-        return this;
-    }
-
-    public Neural setLayer(NNLayer layer) {
-        this.layer = layer;
-        return this;
-    }
-
-    public Neural setSynapses(List<Neural> synapsesList) {
-        for (Neural neural: synapsesList){
-            double weightToStart = rand.nextDouble();
-            synapses.put(neural, new double[]{weightToStart,0});
-        }
-        return this;
-    }
-
-    public Neural() {
-        counter++;
-        this.id = counter;
-    }
 
     @Override
     public int hashCode() {
@@ -131,7 +48,152 @@ public class Neural {
         return ((Neural)obj).getId()==id;
     }
 
+
+
+    public enum Type {
+        Input {},
+        Output {
+            @Override
+            public void work(Neural neuron) {
+                neuron.output = MathTools.normalize(neuron.input-5);
+                neuron.lastInput = neuron.input;
+                neuron.input = 0;
+            }
+            @Override
+            public void updateDelta(Neural neuron) {
+                double tempSum = 0;
+                tempSum = (neuron.net.getRightAnswer() - neuron.output);
+                System.out.println("delta=" + "(ideal=" + neuron.net.getRightAnswer() + ") - (output=" + neuron.output + ") *(normdiiff(output)=" + normalizeDiff(neuron.output) + ") =" + tempSum * normalizeDiff(neuron.output));
+                neuron.currentDelta = tempSum * normalizeDiff(neuron.output);
+            }
+        },
+        Hidden {};
+
+        public void work(Neural neuron) {
+            neuron.output = MathTools.normalize(neuron.input);
+            for (Synapse synapse : neuron.getSynapses()) {
+                synapse.getConsumerNeural().addInput(neuron.output * synapse.getWeight());
+            }
+            neuron.lastInput = neuron.input;
+            neuron.input = 0;
+        }
+
+        public void updateDelta(Neural neuron){
+            double tempSum = 0;
+            for (Synapse synapse:neuron.getSynapses()) {
+                tempSum += (synapse.getWeight() * synapse.getConsumerNeural().getCurrentDelta());
+            }
+            neuron.currentDelta = tempSum * normalizeDiff(neuron.output);
+        }
+    }
+
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public void setNet(NN net) {
+        this.net = net;
+    }
+
+    public void setSynapses(List<Synapse> synapses) {
+        this.synapses = synapses;
+    }
+
+    public List<Synapse> getSynapses() {
+        return synapses;
+    }
+
+    public double getLastInput() {
+        return lastInput;
+    }
+
+    public double getCurrentDelta() {
+        return currentDelta;
+    }
+
     public int getId() {
         return id;
     }
+
+    public NN getNet() {
+        return net;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public double getOutput() {
+        return output;
+    }
+
+    public double getInput() {
+        return input;
+    }
+
+//    public NNLayer getLayer() {
+//        return layer;
+//    }
+
+//    public void setLayer(NNLayer layer) {
+//        this.layer = layer;
+//    }
+
+}
+class NeuronBuilder {
+    private int amount;
+    private List<Neural> neurons = new ArrayList<Neural>();
+
+    NeuronBuilder(int amount){
+        this.amount = amount;
+        for (int i = 0; i<amount; i++){
+            neurons.add(new Neural());
+        }
+    }
+
+    public NeuronBuilder setNet(NN net) {
+        for (int i = 0; i<amount; i++){
+            neurons.get(i).setNet(net);
+        }
+        return this;
+    }
+
+
+    public NeuronBuilder setType(Neural.Type type) {
+        for (int i = 0; i<amount; i++){
+            neurons.get(i).setType(type);
+        }
+        return this;
+    }
+
+    public NeuronBuilder setSynapses(List<Neural> NextLayerNeuronsList) {
+        for (int i = 0; i<amount; i++){
+            List<Synapse> synapsesList = new ArrayList<Synapse>();
+            for (Neural neuron: NextLayerNeuronsList){
+                synapsesList.add(new Synapse(neurons.get(i),neuron));
+            }
+            neurons.get(i).setSynapses(synapsesList);
+        }
+        return this;
+    }
+
+    public List<Neural> build(){
+        for (int i = 0; i<amount; i++) {
+            if (neurons.get(i).getType()==null){
+                if (neurons.get(i).getSynapses().size()==0) {
+                    neurons.get(i).setType(Neural.Type.Output);
+                } else neurons.get(i).setType(Neural.Type.Hidden);
+            }
+            if (neurons.get(i).getNet()==null) System.out.println("missing NN bind declare");
+        }
+        return neurons;
+    }
+
+//        public NeuronBuilder setLayer(NNLayer layer) {
+//            for (int i = 0; i<amount; i++){
+//                neurons.get(i).setLayer(layer);
+//            }
+//            return this;
+//        }
 }

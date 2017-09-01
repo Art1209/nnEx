@@ -5,9 +5,9 @@ package nn;
  */
 public class Main {
     public static void main(String[] args) {
-        NN net = new NN(3,3);
-        net.initTrainingSet(null);
-        net.initLayers();
-        net.learn(100);
+        NNBuilder builder = NN.getBuilder();
+        NN net = builder.build();
+        net.learn(10);
+        System.out.println("end");
     }
 }

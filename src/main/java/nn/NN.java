@@ -5,27 +5,27 @@ import java.io.*;
 import java.util.*;
 
 public class NN {
-    private double speed = 0.4f;
-    private double moment = 0.05f;
+    private double speed = 0.5f;
+    private double moment = 0.3f;
     private int inputs = 3;
-    private int layersAmount;
-    private int outIdeal;
-    private String fileName = "C:\\Users\\aalbutov\\IdeaProjects\\RestClient\\TrainedData";
+    private int hiddenLayersAmount =3;
+    private int neuronPerHiddenLayerAmount=20;
+    private String fileName = "C:\\Users\\aalbutov\\IdeaProjects\\FannEx\\TrainedData";
+
+    private int rightAnswer;
+
     List<int[]> trainingSet = new ArrayList<int[]>();
+    List<List<Neural>> layers = new ArrayList<List<Neural>>();
 
-    public List<NNLayer> getLayers() {
-        return layers;
+
+    NN() {
     }
 
-    List<NNLayer> layers = new ArrayList<NNLayer>();
-
-
-    public NN(int inputs, int layersAmount) {
-        this.inputs = inputs;
-        this.layersAmount = layersAmount;
+    public static NNBuilder getBuilder(){
+        return new NNBuilder();
     }
 
-    public void initTrainingSet(String file){
+    void initTrainingSet(String file){
         if (file!=null)fileName = file;
         try{
             BufferedReader buff= new BufferedReader(new InputStreamReader(new FileInputStream(new File(fileName))));
@@ -44,54 +44,60 @@ public class NN {
             e.printStackTrace();}
     }
 
-    public void initLayers() {
-        String tempName;
-        int neuralAmount;
+    void initLayers() {
 
-        tempName = "Layer#"+1;
-        layers.add(new NNLayer(this, tempName,inputs,false));
+        // build output layer with 1 output neuron
+        NeuronBuilder builder = Neural.getBuilder(1);
+        layers.add(builder.setNet(this).setType(Neural.Type.Output).build());
 
-        for (int i=1; i<(layersAmount-1);i++){
-            tempName = "Layer#"+(i+1);
-            neuralAmount = inputs*3/(layersAmount-1);
-//            neuralAmount = 3;
-            layers.add(new NNLayer(this, tempName,neuralAmount,false));
+        // build hidden layers with set number of neurons
+        for (int i=0; i<hiddenLayersAmount;i++){
+            builder = Neural.getBuilder(neuronPerHiddenLayerAmount);
+            layers.add(builder.setNet(this).setType(Neural.Type.Hidden).setSynapses(layers.get(layers.size()-1)).build());
         }
 
-        tempName = "Layer#"+(layersAmount);
-        layers.add(new NNLayer(this, tempName,1,true));
+        builder = Neural.getBuilder(inputs);
+        layers.add(builder.setNet(this).setType(Neural.Type.Input).setSynapses(layers.get(layers.size()-1)).build());
+    }
 
-        for (int i=0; i<layersAmount;i++){
-            layers.get(i).initSynapses();
+    public void iterate(int [] input, int output){
+        setRightAnswer(output);
+        for (int i = 0; i<input.length;i++){
+            layers.get(layers.size()-1).get(i).addInput(input[i]); // set input values to input layer
         }
+        for (int i = layers.size()-1; i>=0; i--){
+            for (Neural neural: layers.get(i)){
+                neural.doWork();
+            }
+        }
+        for (int i = 0; i<layers.size(); i++){
+            for (Neural neural: layers.get(i)){
+                for (Synapse synapse:neural.getSynapses()){
+                    synapse.updateCurrentWeights();
+                }
+                neural.updateDelta();
+            }
+        }
+        System.out.println(Arrays.toString(input)+" ->  "+
+                layers.get(0).get(0).getOutput()+ " ideal = " + output+ " , delta ="+layers.get(0).get(0).getCurrentDelta());
+
     }
 
     public void learn(int iters){
         for (int i = 0; i<iters; i++){
             for (int k = 0;k<trainingSet.size(); k++){
                 double result;
-                this.setOutIdeal(trainingSet.get(k)[3]);
-                layers.get(0).doFirstWork(trainingSet.get(k));
-                for (int j = 1;j<layers.size()-1;j++){
-                    layers.get(j).doWork();
-                }
-                result = layers.get(layers.size()-1).doLastWork();
-                System.out.println("result: "+result);
-                for (int j = layers.size()-1;j>-1;j--){
-                    layers.get(j).updateWeights();
-                }
-                for (NNLayer layer: layers){
-                    String out ="";
-                    for (Neural neural:layer.getNeurals()){
-                        for (double[] d:neural.getSynapses().values()){
-                            out = out.concat("   "+Double.toString(d[0]));
-                        }
+                int [] trainArray = trainingSet.get(k);
+                int[] inputArray = Arrays.copyOfRange(trainArray, 0, trainArray.length-1);
+                int answer = trainArray[trainArray.length-1];
+                iterate(inputArray, answer);
+            }
+        }
+    }
 
-//                        System.out.println("weight: "+ (out==""?" end":out));
-                        out = "";
-                    }
-                }
-        }}
+
+    public List<List<Neural>> getLayers() {
+        return layers;
     }
 
     public double getSpeed() {
@@ -102,11 +108,72 @@ public class NN {
         return moment;
     }
 
-    public void setOutIdeal(int outIdeal) {
-        this.outIdeal = outIdeal;
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
     }
 
-    public int getOutIdeal() {
-        return outIdeal;
+    public void setMoment(double moment) {
+        this.moment = moment;
+    }
+
+    public void setInputs(int inputs) {
+        this.inputs = inputs;
+    }
+
+    public void setRightAnswer(int rightAnswer) {
+        this.rightAnswer = rightAnswer;
+    }
+
+    public int getRightAnswer() {
+        return rightAnswer;
+    }
+
+    public void setHiddenLayersAmount(int hiddenLayersAmount) {
+        this.hiddenLayersAmount = hiddenLayersAmount;
+    }
+
+    public int getNeuronPerHiddenLayerAmount() {
+        return neuronPerHiddenLayerAmount;
+    }
+
+    public void setNeuronPerHiddenLayerAmount(int neuronPerHiddenLayerAmount) {
+        this.neuronPerHiddenLayerAmount = neuronPerHiddenLayerAmount;
+    }
+}
+
+class NNBuilder{
+    NN net;
+    NNBuilder(){
+        net = new NN();
+    }
+    public NNBuilder setSpeed(double speed){
+        net.setSpeed(speed);
+        return this;
+    }
+    public NNBuilder setMoment(double moment){
+        net.setMoment(moment);
+        return this;
+    }
+    public NNBuilder setInputs(int inputs){
+        net.setInputs(inputs);
+        return this;
+    }
+    public NNBuilder setHiddenLayersAmount(int layerAmount){
+        net.setHiddenLayersAmount(layerAmount);
+        return this;
+    }
+    public NNBuilder setNeuronPerHiddenLayerAmount(int neuronPerHiddenLayerAmount){
+        net.setNeuronPerHiddenLayerAmount(neuronPerHiddenLayerAmount);
+        return this;
+    }
+    public NNBuilder setTrainedDataFile(String path){
+        net.initTrainingSet(path);
+        return this;
+    }
+    public NN build(){
+        net.initTrainingSet(null);
+        net.initLayers();
+        return net;
     }
 }
